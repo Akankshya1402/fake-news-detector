@@ -1,0 +1,49 @@
+# ============================================================
+#  Fake News Detection System
+#  .gitignore
+# ============================================================
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.Python
+*.egg-info/
+dist/
+build/
+.env
+.venv/
+venv/
+env/
+
+# Model checkpoints (large files — store in model registry)
+backend/checkpoints/
+
+# Hugging Face cache
+~/.cache/huggingface/
+
+# Logs
+*.log
+logs/
+
+# Pytest
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Docker
+*.override.yml
+
+# macOS
+.DS_Store
+
+# Node (if any tooling)
+node_modules/

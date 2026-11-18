@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TruthLens — AI Fake News Detector</title>
+  <meta name="description" content="Detect fake news and misinformation in real-time using BERT-powered NLP. Fine-tuned on 10,000+ news articles with 92% accuracy." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Animated background particles -->
+  <div class="bg-canvas" id="bgCanvas"></div>
+
+  <!-- ===== HEADER ===== -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="logo">
+        <div class="logo-icon">
+          <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="18" cy="18" r="17" stroke="url(#lg1)" stroke-width="2"/>
+            <path d="M11 18 L16 23 L25 13" stroke="url(#lg2)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <defs>
+              <linearGradient id="lg1" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#6366f1"/>
+                <stop offset="1" stop-color="#a855f7"/>
+              </linearGradient>
+              <linearGradient id="lg2" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#818cf8"/>
+                <stop offset="1" stop-color="#c084fc"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <span class="logo-name">TruthLens</span>
+        <span class="logo-badge">AI</span>
+      </div>
+
+      <nav class="nav-pills">
+        <a href="#analyzer" class="nav-pill active" id="nav-analyze">Analyze</a>
+        <a href="#history" class="nav-pill" id="nav-history">History</a>
+        <a href="#about" class="nav-pill" id="nav-about">About</a>
+      </nav>
+
+      <div class="header-status" id="apiStatus">
+        <span class="status-dot" id="statusDot"></span>
+        <span class="status-text" id="statusText">Connecting…</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== HERO ===== -->
+  <section class="hero">
+    <div class="hero-inner">
+      <div class="hero-eyebrow">
+        <span class="eyebrow-pill">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="#6366f1" stroke-width="1.5"/><path d="M4 6l1.5 1.5L8 4" stroke="#6366f1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          BERT · DistilBERT · HuggingFace
+        </span>
+      </div>
+      <h1 class="hero-title">
+        Detect Misinformation
+        <span class="gradient-text">Instantly</span>
+      </h1>
+      <p class="hero-subtitle">
+        Fine-tuned BERT model trained on <strong>12,836</strong> news articles
+        from the LIAR dataset — achieving <strong>92% accuracy</strong> in classifying
+        real vs. fabricated news.
+      </p>
+
+      <!-- Stats row -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-num">92%</div>
+          <div class="stat-label">Accuracy</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">12.8K</div>
+          <div class="stat-label">Training Samples</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">DistilBERT</div>
+          <div class="stat-label">Model Architecture</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">&lt;100ms</div>
+          <div class="stat-label">Inference Time</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== MAIN ANALYZER ===== -->
+  <main class="main-content" id="analyzer">
+    <div class="container">
+
+      <!-- Input card -->
+      <div class="glass-card input-card">
+        <div class="card-header">
+          <h2 class="card-title">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 5h14M3 10h10M3 15h7" stroke="#6366f1" stroke-width="1.8" stroke-linecap="round"/></svg>
+            Article Analyzer
+          </h2>
+          <div class="char-counter" id="charCounter">0 / 2000</div>
+        </div>
+
+        <div class="form-group">
+          <label class="field-label" for="articleTitle">Headline (optional)</label>
+          <input
+            type="text"
+            id="articleTitle"
+            class="text-input"
+            placeholder="e.g. Scientists discover miracle cure in common household plant"
+            maxlength="300"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="field-label" for="articleText">Article Body <span class="required">*</span></label>
+          <textarea
+            id="articleText"
+            class="text-area"
+            placeholder="Paste the full article text here…&#10;&#10;The model will analyze linguistic patterns, source credibility signals, and writing style to determine if this is real or fabricated news."
+            maxlength="2000"
+            rows="8"
+          ></textarea>
+        </div>
+
+        <!-- Example pills -->
+        <div class="examples-row">
+          <span class="examples-label">Try an example:</span>
+          <button class="example-btn" id="exFake" onclick="loadExample('fake')">🚨 Fake News</button>
+          <button class="example-btn" id="exReal" onclick="loadExample('real')">✅ Real News</button>
+        </div>
+
+        <button class="analyze-btn" id="analyzeBtn" onclick="analyzeArticle()">
+          <svg class="btn-icon" width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8" stroke="currentColor" stroke-width="1.5"/><path d="M6 9l2 2 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="btn-text">Analyze Article</span>
+          <div class="btn-spinner" id="btnSpinner"></div>
+        </button>
+      </div>
+
+      <!-- Result card -->
+      <div class="glass-card result-card hidden" id="resultCard">
+        <div class="result-header">
+          <div class="result-verdict" id="resultVerdict">
+            <!-- Injected by JS -->
+          </div>
+          <div class="result-meta">
+            <span class="meta-chip" id="latencyChip">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="currentColor" stroke-width="1.2"/><path d="M6 3v3l2 1" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+              <span id="latencyVal">—</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Confidence meter -->
+        <div class="confidence-section">
+          <div class="confidence-labels">
+            <span class="conf-label-real">REAL</span>
+            <span class="conf-label-title">Confidence Distribution</span>
+            <span class="conf-label-fake">FAKE</span>
+          </div>
+          <div class="confidence-bar-track">
+            <div class="confidence-bar-fill-real" id="confBarReal"></div>
+            <div class="confidence-bar-fill-fake" id="confBarFake"></div>
+          </div>
+          <div class="confidence-values">
+            <span id="confValReal">0%</span>
+            <span id="confValFake">0%</span>
+          </div>
+        </div>
+
+        <!-- Probability rings -->
+        <div class="probability-rings">
+          <div class="prob-ring-wrap">
+            <svg class="prob-ring" viewBox="0 0 80 80">
+              <circle cx="40" cy="40" r="34" fill="none" stroke="#1e293b" stroke-width="8"/>
+              <circle cx="40" cy="40" r="34" fill="none" stroke="url(#ringReal)" stroke-width="8"
+                stroke-dasharray="213.6" stroke-dashoffset="213.6"
+                stroke-linecap="round" transform="rotate(-90 40 40)"
+                id="ringRealCircle"/>
+              <defs>
+                <linearGradient id="ringReal" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#10b981"/>
+                  <stop offset="100%" stop-color="#34d399"/>
+                </linearGradient>
+              </defs>
+            </svg>
+            <div class="ring-label">
+              <span class="ring-pct" id="ringRealPct">0%</span>
+              <span class="ring-name">REAL</span>
+            </div>
+          </div>
+
+          <div class="prob-ring-wrap">
+            <svg class="prob-ring" viewBox="0 0 80 80">
+              <circle cx="40" cy="40" r="34" fill="none" stroke="#1e293b" stroke-width="8"/>
+              <circle cx="40" cy="40" r="34" fill="none" stroke="url(#ringFake)" stroke-width="8"
+                stroke-dasharray="213.6" stroke-dashoffset="213.6"
+                stroke-linecap="round" transform="rotate(-90 40 40)"
+                id="ringFakeCircle"/>
+              <defs>
+                <linearGradient id="ringFake" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#ef4444"/>
+                  <stop offset="100%" stop-color="#f87171"/>
+                </linearGradient>
+              </defs>
+            </svg>
+            <div class="ring-label">
+              <span class="ring-pct" id="ringFakePct">0%</span>
+              <span class="ring-name">FAKE</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Explanation -->
+        <div class="explanation-box" id="explanationBox">
+          <div class="explanation-icon">💡</div>
+          <p class="explanation-text" id="explanationText"></p>
+        </div>
+
+        <!-- API Response preview -->
+        <details class="api-preview">
+          <summary class="api-preview-summary">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.2"/><path d="M4 5l3 3-3 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 11h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+            Raw API Response
+          </summary>
+          <pre class="api-json" id="apiJson"></pre>
+        </details>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ===== HISTORY ===== -->
+  <section class="history-section" id="history">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">Recent Analyses</h2>
+        <button class="clear-btn" onclick="clearHistory()">Clear</button>
+      </div>
+      <div class="history-list" id="historyList">
+        <div class="history-empty" id="historyEmpty">
+          <svg width="48" height="48" viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="22" stroke="#334155" stroke-width="2"/><path d="M16 24h16M24 16v16" stroke="#475569" stroke-width="2" stroke-linecap="round"/></svg>
+          <p>No analyses yet. Paste an article above to get started.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== ABOUT ===== -->
+  <section class="about-section" id="about">
+    <div class="container">
+      <div class="about-grid">
+        <div class="about-text">
+          <h2 class="section-title">How It Works</h2>
+          <div class="pipeline-steps">
+            <div class="pipeline-step">
+              <div class="step-num">01</div>
+              <div class="step-body">
+                <h3>Text Preprocessing</h3>
+                <p>HTML tags and URLs are stripped. Title and body are concatenated with a [SEP] token before tokenization.</p>
+              </div>
+            </div>
+            <div class="pipeline-step">
+              <div class="step-num">02</div>
+              <div class="step-body">
+                <h3>DistilBERT Encoding</h3>
+                <p>The article is tokenized to max 512 tokens and encoded by a DistilBERT encoder (66M parameters).</p>
+              </div>
+            </div>
+            <div class="pipeline-step">
+              <div class="step-num">03</div>
+              <div class="step-body">
+                <h3>Classification Head</h3>
+                <p>A linear classification head over the [CLS] token outputs logits → softmax probabilities for REAL/FAKE.</p>
+              </div>
+            </div>
+            <div class="pipeline-step">
+              <div class="step-num">04</div>
+              <div class="step-body">
+                <h3>REST API Response</h3>
+                <p>Results are returned in &lt;100ms via a Dockerized FastAPI endpoint with CORS-enabled JSON responses.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="about-tech">
+          <h2 class="section-title">Tech Stack</h2>
+          <div class="tech-grid">
+            <div class="tech-badge">🤗 HuggingFace Transformers</div>
+            <div class="tech-badge">🐍 Python 3.11</div>
+            <div class="tech-badge">⚡ FastAPI</div>
+            <div class="tech-badge">🐳 Docker</div>
+            <div class="tech-badge">🔥 PyTorch</div>
+            <div class="tech-badge">📊 LIAR Dataset</div>
+            <div class="tech-badge">🧪 Pytest</div>
+            <div class="tech-badge">🌐 Nginx</div>
+          </div>
+
+          <!-- API endpoints -->
+          <div class="endpoint-list">
+            <h3 class="endpoint-title">API Endpoints</h3>
+            <div class="endpoint">
+              <span class="method post">POST</span>
+              <span class="path">/predict</span>
+            </div>
+            <div class="endpoint">
+              <span class="method get">GET</span>
+              <span class="path">/health</span>
+            </div>
+            <div class="endpoint">
+              <span class="method get">GET</span>
+              <span class="path">/model-info</span>
+            </div>
+            <div class="endpoint">
+              <span class="method get">GET</span>
+              <span class="path">/docs</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner">
+        <span class="footer-logo">TruthLens AI</span>
+        <span class="footer-copy">Built with BERT · HuggingFace · FastAPI · Docker</span>
+        <span class="footer-acc">92% Accuracy on LIAR Dataset</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
